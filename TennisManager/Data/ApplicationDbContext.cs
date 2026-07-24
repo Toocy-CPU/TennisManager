@@ -1,9 +1,35 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using TennisManager.Models;
 
 namespace TennisManager.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
+        public DbSet<Tournament> Tournaments { get; set; }
+
+        public DbSet<Match> Matches { get; set; }
+
+        public DbSet<TournamentParticipant> TournamentParticipants { get; set; }
+
+        public DbSet<SetResult> SetResults { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<Match>()
+                .HasOne(m => m.PlayerA)
+                .WithMany()
+                .HasForeignKey(m => m.PlayerAId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            builder.Entity<Match>()
+                .HasOne(m => m.PlayerB)
+                .WithMany()
+                .HasForeignKey(m => m.PlayerBId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
     }
 }

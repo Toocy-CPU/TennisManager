@@ -11,6 +11,8 @@ namespace TennisManager.Data
 
         public string? Club { get; set; }
 
+        public bool IsActive { get; set; } = true;
+
         public string FullName => $"{FirstName} {LastName}";
     }
 
