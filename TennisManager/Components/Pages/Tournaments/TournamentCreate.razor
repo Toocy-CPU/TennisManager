@@ -1,0 +1,99 @@
+﻿@page "/tournaments/create"
+@using TennisManager.Models
+@using TennisManager.Services
+@inject TournamentService TournamentService
+@inject NavigationManager Navigation
+
+<PageTitle>Neues Turnier</PageTitle>
+
+<MudPaper Class="pa-4">
+
+    <MudText Typo="Typo.h4">
+        Neues Turnier
+    </MudText>
+
+    <MudForm>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTextField Label="Turniername"
+                    @bind-Value="Tournament.Name"
+                    Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudDatePicker Label="Datum"
+					@bind-Value="Tournament.Date"
+                    Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSelect T="TournamentMode" 
+                    Label="Modus" @bind-Value="Tournament.Mode" 
+                    Variant="Variant.Outlined">
+                    @foreach(var mode in Enum.GetValues<TournamentMode>())
+                    {
+                        <MudSelectItem Value="@mode">
+                            @mode
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+
+                <MudTextField Label="Ort"
+                    @bind-Value="Tournament.Location"
+                    Variant="Variant.Outlined" />
+
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField T="int"
+                    Label="Max. Teilnehmer"
+                    @bind-Value="Tournament.MaxPlayers"
+                    Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12">
+
+                <MudTextField Label="Beschreibung"
+                              Lines="4"
+                              @bind-Value="Tournament.Description"
+                              Variant="Variant.Outlined" />
+
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudStack Row="true"
+                    Justify="Justify.FlexEnd"
+                    Spacing="2">
+
+                    <MudButton Variant="Variant.Text">
+                        Abbrechen
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Filled"
+                        Color="Color.Primary" 
+                        OnClick="SaveTournament">
+                        Speichern
+                    </MudButton>
+
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+
+    </MudForm>
+
+</MudPaper>
+
+@code {
+    private Tournament Tournament = new();
+
+    // works for now but on a longterm the form should be submitted with the button to validate fields
+    private async Task SaveTournament()
+    {
+        await TournamentService.CreateTournamentAsync(Tournament);
+
+        Navigation.NavigateTo("/Tournaments");
+    }
+}

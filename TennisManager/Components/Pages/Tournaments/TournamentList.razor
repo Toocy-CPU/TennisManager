@@ -2,6 +2,7 @@
 @using TennisManager.Services
 @using TennisManager.Models
 @inject TournamentService TournamentService
+@inject NavigationManager Navigation
 
 <PageTitle>Turniere</PageTitle>
 
@@ -18,7 +19,8 @@
 
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Add">
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="CreateTournament">
 
             Neues Turnier
 
@@ -33,6 +35,7 @@
             <MudTh>Name</MudTh>
             <MudTh>Datum</MudTh>
             <MudTh>Ort</MudTh>
+            <MudTh>Modus</MudTh>
             <MudTh>Status</MudTh>
 
         </HeaderContent>
@@ -42,6 +45,7 @@
             <MudTd>@context.Name</MudTd>
             <MudTd>@context.Date.ToShortDateString()</MudTd>
             <MudTd>@context.Location</MudTd>
+            <MudTd>@context.Mode</MudTd>
             <MudTd>@context.Status</MudTd>
 
         </RowTemplate>
@@ -56,5 +60,9 @@
     protected override async Task OnInitializedAsync()
     {
         tournaments = await TournamentService.GetTournamentsAsync();
+    }
+    private void CreateTournament()
+    {
+        Navigation.NavigateTo("/tournaments/create");
     }
 }
