@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using TennisManager.Components;
 using TennisManager.Components.Account;
 using TennisManager.Data;
+using TennisManager.Services;
 
 namespace TennisManager
 {
@@ -40,6 +41,8 @@ namespace TennisManager
                 .AddDefaultTokenProviders();
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+            builder.Services.AddScoped<TournamentService>();
 
             var app = builder.Build();
 
