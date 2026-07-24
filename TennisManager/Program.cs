@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
 using TennisManager.Components;
 using TennisManager.Components.Account;
 using TennisManager.Data;
@@ -41,7 +42,8 @@ namespace TennisManager
                 .AddDefaultTokenProviders();
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-
+            // user added services etc
+            builder.Services.AddMudServices();
             builder.Services.AddScoped<TournamentService>();
 
             var app = builder.Build();

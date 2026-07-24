@@ -1,0 +1,60 @@
+﻿@page "/tournaments"
+@using TennisManager.Services
+@using TennisManager.Models
+@inject TournamentService TournamentService
+
+<PageTitle>Turniere</PageTitle>
+
+<MudPaper Class="pa-4">
+
+    <MudStack Row="true"
+              Justify="Justify.SpaceBetween"
+              AlignItems="AlignItems.Center"
+              Class="mb-4">
+
+        <MudText Typo="Typo.h4">
+            Turniere
+        </MudText>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add">
+
+            Neues Turnier
+
+        </MudButton>
+
+    </MudStack>
+
+    <MudTable Items="@tournaments">
+
+        <HeaderContent>
+
+            <MudTh>Name</MudTh>
+            <MudTh>Datum</MudTh>
+            <MudTh>Ort</MudTh>
+            <MudTh>Status</MudTh>
+
+        </HeaderContent>
+
+        <RowTemplate>
+
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Date.ToShortDateString()</MudTd>
+            <MudTd>@context.Location</MudTd>
+            <MudTd>@context.Status</MudTd>
+
+        </RowTemplate>
+
+    </MudTable>
+
+</MudPaper>
+
+@code {
+    private List<Tournament> tournaments = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        tournaments = await TournamentService.GetTournamentsAsync();
+    }
+}

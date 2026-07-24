@@ -1,74 +1,54 @@
-﻿@implements IDisposable
+﻿@inject NavigationManager NavigationManager
 
-@inject NavigationManager NavigationManager
+<MudNavMenu Rounded="true">
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">TennisManager</a>
-    </div>
-</div>
+    <MudNavLink Href="/"
+                Match="NavLinkMatch.All"
+                Icon="@Icons.Material.Filled.Home">
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+        Dashboard
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
+    </MudNavLink>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+@*     <MudText Typo="Typo.overline" Class="px-4 pt-4">
+        Verwaltung
+    </MudText> *@
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
+    <MudNavLink Href="/tournaments"
+                Icon="@Icons.Material.Filled.EmojiEvents">
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="auth">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
-            </NavLink>
-        </div>
+        Turniere
 
-        <AuthorizeView>
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                        </button>
-                    </form>
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
-                    </NavLink>
-                </div>
-            </NotAuthorized>
-        </AuthorizeView>
-    </nav>
-</div>
+    </MudNavLink>
 
+    <MudNavLink Href="/players"
+                Icon="@Icons.Material.Filled.Groups">
+
+        Spieler
+
+    </MudNavLink>
+
+    <MudNavLink Href="/matches"
+                Icon="@Icons.Material.Filled.SportsTennis">
+
+        Matches
+
+    </MudNavLink>
+
+    <MudDivider Class="my-2" />
+
+    <MudNavLink Href="/settings"
+                Icon="@Icons.Material.Filled.Settings">
+
+        Einstellungen
+
+    </MudNavLink>
+
+</MudNavMenu>
+
+@* 
+    !!!! unused with modblazor but relevant for bootstrap    !!!! 
+    @implements IDisposable
 @code {
     private string? currentUrl;
 
@@ -89,4 +69,4 @@
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }
-
+ *@
