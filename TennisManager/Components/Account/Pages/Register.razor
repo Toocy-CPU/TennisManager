@@ -28,6 +28,23 @@
             <hr />
             <ValidationSummary class="text-danger" role="alert" />
             <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.FirstName" class="form-control" placeholder="First Name" />
+                <label>First Name</label>
+                <ValidationMessage For="() => Input.FirstName" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.LastName" class="form-control" placeholder="Last Name" />
+                <label>Last Name</label>
+                <ValidationMessage For="() => Input.LastName" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Club" class="form-control" placeholder="Club" />
+                <label>Club (optional)</label>
+                <ValidationMessage For="() => Input.Club" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                 <label for="email">Email</label>
                 <ValidationMessage For="() => Input.Email" class="text-danger" />
@@ -68,6 +85,10 @@
     public async Task RegisterUser(EditContext editContext)
     {
         var user = CreateUser();
+
+        user.FirstName = Input.FirstName;
+        user.LastName = Input.LastName;
+        user.Club = Input.Club;
 
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         var emailStore = GetEmailStore();
@@ -126,6 +147,20 @@
 
     private sealed class InputModel
     {
+        [Required]
+        [StringLength(50, ErrorMessage = "Enter your First Name", MinimumLength = 1)]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; } = "";
+
+        [Required]
+        [StringLength(50, ErrorMessage = "Enter your Last Name", MinimumLength = 1)]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; } = "";
+
+        [StringLength(100, ErrorMessage = "Enter your Club Name", MinimumLength = 1)]
+        [Display(Name = "Club")]
+        public string? Club { get; set; }
+
         [Required]
         [EmailAddress]
         [Display(Name = "Email")]
