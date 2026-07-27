@@ -1,0 +1,129 @@
+﻿@using Microsoft.AspNetCore.Antiforgery
+@using Microsoft.AspNetCore.Identity
+@using TennisManager.Data
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject IAntiforgery Antiforgery
+@inject IHttpContextAccessor HttpContextAccessor
+
+<MudMenu Icon="@Icons.Material.Filled.AccountCircle"
+         Color="Color.Inherit">
+
+    <AuthorizeView>
+
+        <Authorized>
+
+            <MudPaper Class="pa-3 ma-2" Elevation="0">
+
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+
+                    <MudAvatar Size="Size.Medium"
+                               Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.Person" />
+                    </MudAvatar>
+
+                    <MudStack Spacing="0">
+
+                        <MudText Typo="Typo.subtitle1">
+                            @CurrentUser?.FullName
+                        </MudText>
+
+                        @if (!string.IsNullOrWhiteSpace(CurrentUser?.Club))
+                        {
+                            <MudText Typo="Typo.caption"
+                                        Color="Color.Secondary">
+                                @CurrentUser.Club
+                            </MudText>
+                        }
+
+                    </MudStack>
+
+                </MudStack>
+
+            </MudPaper>
+
+            <MudDivider />
+
+            <MudMenuItem Icon="@Icons.Material.Filled.ManageAccounts"
+                         OnClick="GoToAccount">
+                Konto verwalten
+            </MudMenuItem>
+
+            <MudDivider />
+
+            <form action="Account/Logout" method="post">
+
+                <input type="hidden"
+                       name="__RequestVerificationToken"
+                       value="@_antiforgeryToken" />
+
+                <input type="hidden"
+                       name="ReturnUrl"
+                       value="" />
+
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Text"
+                           FullWidth="true"
+                           StartIcon="@Icons.Material.Filled.Logout">
+
+                    Abmelden
+
+                </MudButton>
+
+            </form>
+
+        </Authorized>
+
+        <NotAuthorized>
+            <MudMenuItem OnClick="GoToLogin">
+                Anmelden
+            </MudMenuItem>
+
+            <MudMenuItem OnClick="GoToRegister">
+                Registrieren
+            </MudMenuItem>
+        </NotAuthorized>
+
+    </AuthorizeView>
+
+</MudMenu>
+
+@code
+{
+    private ApplicationUser? CurrentUser;
+    private string? _antiforgeryToken;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            CurrentUser = await UserManager.GetUserAsync(user);
+            InitializeAntiforgeryToken();
+        }
+
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/Account/Login");
+
+    }
+    private void GoToRegister()
+    {
+        Navigation.NavigateTo("/Account/Register");
+    }
+    private void GoToAccount()
+    {
+        Navigation.NavigateTo("/Account/Manage");
+    }
+    private void InitializeAntiforgeryToken()
+    {
+        var tokens = Antiforgery.GetAndStoreTokens(HttpContextAccessor.HttpContext!);
+        _antiforgeryToken = tokens.RequestToken;
+    }
+}

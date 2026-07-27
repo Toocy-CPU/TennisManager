@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <MudThemeProvider />
 <MudPopoverProvider />
@@ -16,8 +18,8 @@
 
         <MudSpacer />
 
-        <MudIconButton Icon="@Icons.Material.Filled.AccountCircle"
-                       Color="Color.Inherit" />
+        <UserMenu/>
+
     </MudAppBar>
 
     <MudDrawer Open="true"
@@ -40,3 +42,19 @@
     </MudMainContent>
 
 </MudLayout>
+
+<form id="logoutForm"
+      action="Account/Logout"
+      method="post"
+      style="display:none">
+
+    <AntiforgeryToken />
+
+    <input type="hidden"
+           name="ReturnUrl"
+           value="" />
+
+    <button type="submit"></button>
+
+</form>
+

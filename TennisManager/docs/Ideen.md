@@ -4,6 +4,8 @@
 - Freilose automatisch erzeugen
 - Maximale Teilnehmer abhängig vom Modus validieren
 - Anmeldeschluss
+- einladungslink verschicken können
+- location muss atomar werden
 
 ## Spieler
 - LK
