@@ -3,7 +3,6 @@
 @using TennisManager.Data
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject UserManager<ApplicationUser> UserManager
 @inject IAntiforgery Antiforgery
 @inject IHttpContextAccessor HttpContextAccessor
 
@@ -26,16 +25,8 @@
                     <MudStack Spacing="0">
 
                         <MudText Typo="Typo.subtitle1">
-                            @CurrentUser?.FullName
+                            @context.User.Identity?.Name
                         </MudText>
-
-                        @if (!string.IsNullOrWhiteSpace(CurrentUser?.Club))
-                        {
-                            <MudText Typo="Typo.caption"
-                                        Color="Color.Secondary">
-                                @CurrentUser.Club
-                            </MudText>
-                        }
 
                     </MudStack>
 
@@ -91,7 +82,6 @@
 
 @code
 {
-    private ApplicationUser? CurrentUser;
     private string? _antiforgeryToken;
 
     protected override async Task OnInitializedAsync()
@@ -102,7 +92,6 @@
 
         if (user.Identity?.IsAuthenticated == true)
         {
-            CurrentUser = await UserManager.GetUserAsync(user);
             InitializeAntiforgeryToken();
         }
 
