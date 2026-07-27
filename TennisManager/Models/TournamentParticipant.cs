@@ -9,7 +9,7 @@ namespace TennisManager.Models
         public ApplicationUser User { get; set; } = null!;
         public int TournamentId { get; set; }
         public Tournament Tournament { get; set; } = null!;
-        public DateTime RegistrationDate { get; set; }
+        public DateTime RegistrationDate { get; set; } = DateTime.Now;
 
     }
 }

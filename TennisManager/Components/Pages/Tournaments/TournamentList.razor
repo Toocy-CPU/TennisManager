@@ -1,58 +1,87 @@
 ﻿@page "/tournaments"
 @using TennisManager.Services
 @using TennisManager.Models
+@using System.Security.Claims
 @inject TournamentService TournamentService
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Turniere</PageTitle>
 
-<MudPaper Class="pa-4">
+<MudGrid Spacing="3">
 
-    <MudStack Row="true"
-              Justify="Justify.SpaceBetween"
-              AlignItems="AlignItems.Center"
-              Class="mb-4">
+    @foreach (var tournament in tournaments)
+    {
+        <MudItem xs="12" sm="6" lg="4">
 
-        <MudText Typo="Typo.h4">
-            Turniere
-        </MudText>
+            <MudCard>
 
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="CreateTournament">
+                <MudCardContent>
 
-            Neues Turnier
+                    <MudText Typo="Typo.h6">
+                        @tournament.Name
+                    </MudText>
 
-        </MudButton>
+                    <MudDivider Class="my-2"/>
 
-    </MudStack>
+                    <MudStack Spacing="1">
 
-    <MudTable Items="@tournaments">
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth"
+                                     Class="me-2" />
+                            @tournament.Date.ToShortDateString()
+                        </MudText>
 
-        <HeaderContent>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.LocationOn"
+                                     Class="me-2" />
+                            @tournament.Location
+                        </MudText>
 
-            <MudTh>Name</MudTh>
-            <MudTh>Datum</MudTh>
-            <MudTh>Ort</MudTh>
-            <MudTh>Modus</MudTh>
-            <MudTh>Status</MudTh>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Groups"
+                                     Class="me-2" />
+                            @tournament.Participants.Count / @tournament.MaxPlayers Teilnehmer
+                        </MudText>
 
-        </HeaderContent>
+                        <MudChip T="string" Color="@GetStatusColor(tournament.Status)"
+                                 Variant="Variant.Filled">
 
-        <RowTemplate>
+                            @tournament.Status
 
-            <MudTd>@context.Name</MudTd>
-            <MudTd>@context.Date.ToShortDateString()</MudTd>
-            <MudTd>@context.Location</MudTd>
-            <MudTd>@context.Mode</MudTd>
-            <MudTd>@context.Status</MudTd>
+                        </MudChip>
 
-        </RowTemplate>
+                    </MudStack>
 
-    </MudTable>
+                </MudCardContent>
 
-</MudPaper>
+                <MudCardActions>
+
+                    <MudButton Variant="Variant.Text"
+                               StartIcon="@Icons.Material.Filled.Visibility">
+
+                        Details
+
+                    </MudButton>
+
+                    <MudSpacer />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="() => RegisterForTournament(tournament.Id)">
+
+                        Anmelden
+
+                    </MudButton>
+
+                </MudCardActions>
+
+            </MudCard>
+
+        </MudItem>
+    }
+
+</MudGrid>
 
 @code {
     private List<Tournament> tournaments = [];
@@ -61,8 +90,47 @@
     {
         tournaments = await TournamentService.GetTournamentsAsync();
     }
+
     private void CreateTournament()
     {
         Navigation.NavigateTo("/tournaments/create");
+    }
+
+    private async Task RegisterForTournament(int tournamentId)
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated != true)
+        {
+            return;
+        }
+
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId is null)
+        {
+            return;
+        }
+
+        var result = await TournamentService.RegisterPlayerAsync(
+            tournamentId,
+            userId
+        );
+
+        // erstmal nur testen
+        Console.WriteLine(result);
+    }
+
+    private Color GetStatusColor(TournamentStatus status)
+    {
+        return status switch
+        {
+            TournamentStatus.RegistrationOpen => Color.Success,
+            TournamentStatus.InProgress => Color.Info,
+            TournamentStatus.RegistrationClosed => Color.Default,
+            _ => Color.Default
+        };
     }
 }
