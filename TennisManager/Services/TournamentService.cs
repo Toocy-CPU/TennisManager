@@ -58,16 +58,44 @@ namespace TennisManager.Services
             tournament.Participants.Add(participant);
             await _context.SaveChangesAsync();
 
-            return RegistrationResult.Success;
+            return RegistrationResult.Registered;
+        }
+        public async Task<RegistrationResult> UnregisterPlayerAsync(int tournamentId, string userId)
+        {
+            var tournament = await _context.Tournaments
+                .Include(t => t.Participants)
+                .FirstOrDefaultAsync(t => t.Id == tournamentId);
+
+            if (tournament is null)
+            {
+                return RegistrationResult.TournamentNotFound;
+            }
+            if (tournament.Status != TournamentStatus.RegistrationOpen)
+            {
+                return RegistrationResult.RegistrationClosed;
+            }
+            var participant = tournament.Participants
+                .FirstOrDefault(p => p.UserId == userId);
+
+            if (participant == null)
+            {
+                return RegistrationResult.PlayerNotFound;       
+            }
+
+            tournament.Participants.Remove(participant);
+            await _context.SaveChangesAsync();
+            return RegistrationResult.Unregistered;
         }
     }
 
     public enum RegistrationResult
     {
-        Success,
+        Registered,
         AlreadyRegistered,
         TournamentFull,
         RegistrationClosed,
-        TournamentNotFound
+        TournamentNotFound,
+        Unregistered,
+        PlayerNotFound
     }
 }

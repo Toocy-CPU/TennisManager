@@ -1,10 +1,12 @@
 ﻿@page "/tournaments"
+@using TennisManager.Components.Shared
 @using TennisManager.Services
 @using TennisManager.Models
 @using System.Security.Claims
 @inject TournamentService TournamentService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IDialogService DialogService
 
 <PageTitle>Turniere</PageTitle>
 
@@ -65,14 +67,26 @@
                     </MudButton>
 
                     <MudSpacer />
-
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               OnClick="() => RegisterForTournament(tournament.Id)">
-
-                        Anmelden
-
-                    </MudButton>
+                    @if (currentUserId is null)
+                    {
+                        // nichts anzeigen
+                    }
+                    else if (IsRegistered(tournament))
+                    {
+                        <MudButton Color="Color.Error"
+                                   Variant="Variant.Filled"
+                                   OnClick="() => UnregisterFromTournament(tournament.Id)">
+                            Abmelden
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   OnClick="() => RegisterForTournament(tournament.Id)">
+                            Anmelden
+                        </MudButton>
+                    }
 
                 </MudCardActions>
 
@@ -85,9 +99,13 @@
 
 @code {
     private List<Tournament> tournaments = [];
+    private string? currentUserId;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        currentUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
         tournaments = await TournamentService.GetTournamentsAsync();
     }
 
@@ -98,29 +116,49 @@
 
     private async Task RegisterForTournament(int tournamentId)
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
-        var user = authState.User;
-
-        if (user.Identity?.IsAuthenticated != true)
-        {
-            return;
-        }
-
-        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (userId is null)
+        if (currentUserId is null)
         {
             return;
         }
 
         var result = await TournamentService.RegisterPlayerAsync(
             tournamentId,
-            userId
+            currentUserId
         );
 
         // erstmal nur testen
         Console.WriteLine(result);
+    }
+    private async Task UnregisterFromTournament(int tournamentId)
+    {
+        if (currentUserId is null)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.Title, "Abmeldung" },
+            { x => x.Message, "Möchten Sie sich wirklich vom Turnier abmelden?" },
+            { x => x.ConfirmButtonText, "Abmelden"}
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>(
+        title:null,
+        parameters);
+
+        var dialogResult = await dialog.Result;
+        if (dialogResult is null || dialogResult.Canceled)
+        {
+            return;
+        }
+
+        var registrationResult = await TournamentService.UnregisterPlayerAsync(
+            tournamentId,
+            currentUserId
+        );
+
+        // erstmal nur testen
+        Console.WriteLine(registrationResult);
     }
 
     private Color GetStatusColor(TournamentStatus status)
@@ -132,5 +170,14 @@
             TournamentStatus.RegistrationClosed => Color.Default,
             _ => Color.Default
         };
+    }
+    private bool IsRegistered(Tournament tournament)
+    {        
+
+        return tournament.Participants.Any(p => p.UserId == currentUserId);
+
+        // tournament cant be Null bcs we use this in a foreach over tournaments so it
+        //  would never be called if no tournarment is there
+        //return tournament?.Participants.Any(p => p.UserId == currentUserId) ?? false;
     }
 }

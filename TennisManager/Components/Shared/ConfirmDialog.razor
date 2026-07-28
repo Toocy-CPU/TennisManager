@@ -1,0 +1,49 @@
+﻿
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            @Title
+        </MudText>
+    </TitleContent>
+
+    <DialogContent>
+        @Message
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel">
+            Abbrechen
+        </MudButton>
+
+        <MudButton Color="Color.Error"
+                   Variant="Variant.Filled"
+                   OnClick="Confirm">
+            @ConfirmButtonText
+        </MudButton>
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Message { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ConfirmButtonText { get; set; } = "Bestätigen";
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void Confirm()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}
