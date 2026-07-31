@@ -1,0 +1,35 @@
+﻿@page "/tournaments/{TournamentId:int}"
+@using TennisManager.Models
+@using TennisManager.Services
+@inject TournamentService TournamentService
+
+<MudPaper Class="pa-4">
+
+    <MudText Typo="Typo.h4">
+        @tournament?.Name
+    </MudText>
+
+    <MudText>
+        📍 @tournament?.Location
+    </MudText>
+
+    <MudText>
+        📅 @tournament?.Date.ToShortDateString()
+    </MudText>
+
+    <MudText>
+        👥 @tournament?.Participants.Count Teilnehmer
+    </MudText>
+
+</MudPaper>
+@code {
+	[Parameter]
+	public int TournamentId { get; set; }
+
+	private Tournament? tournament { get; set; }
+
+	protected override async Task OnParametersSetAsync()
+	{
+		tournament = await TournamentService.GetTournamentAsync(TournamentId);
+	}
+}

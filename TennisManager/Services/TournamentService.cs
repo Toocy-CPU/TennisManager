@@ -17,9 +17,11 @@ namespace TennisManager.Services
         {
             return await _context.Tournaments.Include(p => p.Participants).ToListAsync();
         }
-        public async Task<Tournament?> GetTurnamentAsync(int id)
+        public async Task<Tournament?> GetTournamentAsync(int tournamentId)
         {
-            return await _context.Tournaments.FirstOrDefaultAsync(t => t.Id == id);
+            return await _context.Tournaments
+                .Include(p => p.Participants)
+                .ThenInclude(u => u.User).FirstOrDefaultAsync(t => t.Id == tournamentId);
         }
         public async Task CreateTournamentAsync(Tournament tournament)
         {

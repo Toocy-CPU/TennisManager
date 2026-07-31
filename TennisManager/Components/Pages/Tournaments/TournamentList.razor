@@ -61,7 +61,8 @@
                 <MudCardActions>
 
                     <MudButton Variant="Variant.Text"
-                               StartIcon="@Icons.Material.Filled.Visibility">
+                               StartIcon="@Icons.Material.Filled.Visibility"
+                                OnClick="() => OpenTournamentDetails(tournament.Id)">
 
                         Details
 
@@ -113,6 +114,10 @@
     private void CreateTournament()
     {
         Navigation.NavigateTo("/tournaments/create");
+    }
+    private void OpenTournamentDetails(int tournamentId)
+    {
+        Navigation.NavigateTo($"/tournaments/{tournamentId}");
     }
 
     private async Task RegisterForTournament(int tournamentId)
