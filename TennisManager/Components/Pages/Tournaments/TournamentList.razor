@@ -7,6 +7,7 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Turniere</PageTitle>
 
@@ -126,8 +127,7 @@
             currentUserId
         );
 
-        // erstmal nur testen
-        Console.WriteLine(result);
+        ShowRegistrationResultSnackbar(result);
     }
     private async Task UnregisterFromTournament(int tournamentId)
     {
@@ -157,8 +157,7 @@
             currentUserId
         );
 
-        // erstmal nur testen
-        Console.WriteLine(registrationResult);
+        ShowRegistrationResultSnackbar(registrationResult);
     }
 
     private Color GetStatusColor(TournamentStatus status)
@@ -179,5 +178,39 @@
         // tournament cant be Null bcs we use this in a foreach over tournaments so it
         //  would never be called if no tournarment is there
         //return tournament?.Participants.Any(p => p.UserId == currentUserId) ?? false;
+    }
+    private void ShowRegistrationResultSnackbar(RegistrationResult result)
+    {
+        switch (result)
+        {
+            case RegistrationResult.Registered:
+                Snackbar.Add($"Erfolgreich am Turnier angemeldet",
+                    Severity.Success);
+                break;
+            case RegistrationResult.Unregistered:
+                Snackbar.Add("Erfolgreich vom Turnier abgemeldet",
+                    Severity.Success);
+                break;
+            case RegistrationResult.AlreadyRegistered:
+                Snackbar.Add("Bereits am Turnier angemeldet",
+                    Severity.Info);
+                break;
+            case RegistrationResult.RegistrationClosed:
+                Snackbar.Add("Anmeldung geschlossen",
+                    Severity.Warning);
+                break;
+            case RegistrationResult.PlayerNotFound:
+                Snackbar.Add("Spieler nicht gefunden",
+                    Severity.Warning);
+                break;
+            case RegistrationResult.TournamentFull:
+                Snackbar.Add("Das Turnier ist bereits voll",
+                    Severity.Warning);
+                break;
+            case RegistrationResult.TournamentNotFound:
+                Snackbar.Add("Turnier nicht gefunden",
+                    Severity.Error);
+                    break;
+        }
     }
 }
