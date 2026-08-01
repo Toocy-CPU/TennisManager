@@ -57,7 +57,7 @@
                             <MudStack Row="true" AlignItems="AlignItems.Center">
                                 <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Class="me-2" />
                                 <MudText>
-                                    Start: @tournament.StartDate.ToShortDateString()
+                                    Start: @tournament.StartDate?.ToShortDateString()
                                 </MudText>
                             </MudStack>
                         </MudItem>
@@ -75,7 +75,7 @@
                             <MudStack Row="true" AlignItems="AlignItems.Center">
                                 <MudIcon Icon="@Icons.Material.Filled.EventBusy" Class="me-2" />
                                 <MudText>
-                                    Anmeldung bis: @tournament.RegistrationEnds.ToShortDateString()
+                                    Anmeldung bis: @tournament.RegistrationEnds?.ToShortDateString()
                                 </MudText>
                             </MudStack>
                         </MudItem>

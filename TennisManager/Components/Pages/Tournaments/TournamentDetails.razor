@@ -11,7 +11,7 @@
 {
 	<MudText>Turnier wird geladen...</MudText>
 }
-else
+else if (editingTournament == null)
 {
     <MudStack Row="true"
               Justify="Justify.SpaceBetween"
@@ -28,7 +28,7 @@ else
 
             <MudButton Variant="Variant.Outlined"
                        StartIcon="@Icons.Material.Filled.Edit"
-                       Disabled="true">
+                       OnClick="StartEditing">
                 Bearbeiten
             </MudButton>
 
@@ -61,7 +61,7 @@ else
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                             <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" />
                             <MudText>
-                                Start: @tournament.StartDate.ToShortDateString()
+                                Start: @tournament.StartDate?.ToShortDateString()
                             </MudText>
                         </MudStack>
                     </MudItem>
@@ -79,7 +79,7 @@ else
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                             <MudIcon Icon="@Icons.Material.Filled.EventBusy" />
                             <MudText>
-                                Anmeldung bis: @tournament.RegistrationEnds.ToShortDateString()
+                                Anmeldung bis: @tournament.RegistrationEnds?.ToShortDateString()
                             </MudText>
                         </MudStack>
                     </MudItem>
@@ -203,20 +203,246 @@ else
 
     </MudGrid>
 }
+else
+{
+    <MudStack Row="true"
+              Justify="Justify.SpaceBetween"
+              AlignItems="AlignItems.Center"
+              Class="mb-4">
+
+        <MudButton Variant="Variant.Text"
+                   StartIcon="@Icons.Material.Filled.Close"
+                   OnClick="CancelEditing">
+
+            Abbrechen
+
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="SaveEditing">
+
+            Speichern
+
+        </MudButton>
+
+    </MudStack>
+    <MudGrid Spacing="3">
+
+        <!-- Linke Seite -->
+        <MudItem xs="12" md="7">
+
+            <MudPaper Class="pa-6 h-100" Elevation="2">
+
+                <MudTextField Label="Turniername"
+                              @bind-Value="editingTournament.Name"
+                              Variant="Variant.Outlined"
+                              FullWidth="true" />
+
+                <MudDivider Class="my-4" />
+
+                <MudGrid Spacing="4">
+
+                    <MudItem xs="12" md="6">
+
+                        <MudDatePicker Label="Startdatum"
+                                       @bind-Date="editingTournament.StartDate"
+                                       Variant="Variant.Outlined" />
+
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+
+                        <MudNumericField T="int"
+                                         Label="Max. Teilnehmer"
+                                         @bind-Value="editingTournament.MaxPlayers"
+                                         Variant="Variant.Outlined" />
+
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+
+                        <MudDatePicker Label="Anmeldeschluss"
+                                       @bind-Date="editingTournament.RegistrationEnds"
+                                       Variant="Variant.Outlined" />
+
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+
+                        <MudNumericField T="int"
+                                         Label="Tage pro Runde"
+                                         @bind-Value="editingTournament.RoundDurationInDays"
+                                         Variant="Variant.Outlined" />
+
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+
+                        <MudTextField Label="Ort"
+                                      @bind-Value="editingTournament.Location"
+                                      Variant="Variant.Outlined" />
+
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+
+                        <MudSelect T="TournamentMode"
+                                   Label="Modus"
+                                   @bind-Value="editingTournament.Mode"
+                                   Variant="Variant.Outlined">
+
+                            @foreach (var mode in Enum.GetValues<TournamentMode>())
+                            {
+                                <MudSelectItem Value="@mode">
+                                    @mode
+                                </MudSelectItem>
+                            }
+
+                        </MudSelect>
+
+                    </MudItem>
+
+                    <MudItem xs="12">
+
+                        <MudChip T="string"
+                                 Color="@editingTournament.Status.GetColor()"
+                                 Icon="@editingTournament.Status.GetIcon()"
+                                 Variant="Variant.Filled"
+                                 Class="w-100">
+
+                            @editingTournament.Status.GetText()
+
+                        </MudChip>
+
+                    </MudItem>
+
+                </MudGrid>
+
+                <MudDivider Class="my-4" />
+
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    Beschreibung
+                </MudText>
+
+                <MudTextField @bind-Value="editingTournament.Description"
+                              Variant="Variant.Outlined"
+                              Lines="5"
+                              FullWidth="true" />
+
+            </MudPaper>
+
+        </MudItem>
+
+        <!-- Rechte Seite -->
+        <MudItem xs="12" md="5">
+
+            <MudPaper Class="pa-6 h-100" Elevation="2">
+
+                <MudStack Row="true"
+                          Justify="Justify.SpaceBetween"
+                          AlignItems="AlignItems.Center">
+
+                    <MudText Typo="Typo.h5">
+                        Teilnehmer
+                    </MudText>
+
+                    <MudChip T="int"
+                             Color="Color.Primary"
+                             Variant="Variant.Outlined">
+
+                        @editingTournament.Participants.Count
+
+                    </MudChip>
+
+                </MudStack>
+
+                <MudDivider Class="my-4" />
+
+                @if (editingTournament.Participants.Any())
+                {
+                    <MudList T="TournamentParticipant">
+
+                        @foreach (var participant in editingTournament.Participants.OrderBy(p => p.User.FullName))
+                        {
+                            <MudListItem T="TournamentParticipant"
+                                         Value="@participant">
+
+                                <MudAvatar Size="Size.Small"
+                                           Icon="@Icons.Material.Filled.Person"
+                                           Class="me-3" />
+
+                                <MudText Class="flex-grow-1">
+                                    @participant.User.FullName
+                                </MudText>
+
+                                <MudIconButton Icon="@Icons.Material.Filled.PersonRemove"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="() => RemoveParticipant(participant)" />
+
+                            </MudListItem>
+                        }
+
+                    </MudList>
+                }
+                else
+                {
+                    <MudText Color="Color.Secondary">
+                        Noch keine Teilnehmer angemeldet.
+                    </MudText>
+                }
+
+            </MudPaper>
+
+        </MudItem>
+
+    </MudGrid>
+}
 
 @code {
-	[Parameter]
-	public int TournamentId { get; set; }
+    [Parameter]
+    public int TournamentId { get; set; }
 
-	private Tournament? tournament { get; set; }
+    private Tournament? tournament { get; set; }
+    private Tournament? editingTournament { get; set; }
 
-	protected override async Task OnParametersSetAsync()
-	{
-		tournament = await TournamentService.GetTournamentAsync(TournamentId);
-	}
+    protected override async Task OnParametersSetAsync()
+    {
+        tournament = await TournamentService.GetTournamentAsync(TournamentId);
+    }
 
     private void GoBack()
     {
         Navigation.NavigateTo("/tournaments");
+    }
+    public void StartEditing()
+    {
+        if (tournament is null)
+        {
+            return;
+        }
+        editingTournament = tournament?.Clone();
+    }
+    private void CancelEditing()
+    {
+        editingTournament = null;
+    }
+    private async Task SaveEditing()
+    {
+        if (editingTournament is null)
+        {
+            return;
+        }
+
+        // später Service aufrufen
+
+        tournament = editingTournament;
+        editingTournament = null;
+    }
+    private void RemoveParticipant(TournamentParticipant participant)
+    {
+        
     }
 }

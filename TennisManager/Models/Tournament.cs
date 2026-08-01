@@ -7,8 +7,8 @@ namespace TennisManager.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public DateTime StartDate { get; set; } = DateTime.Today;
-        public DateTime RegistrationEnds { get; set; }
+        public DateTime? StartDate { get; set; } = DateTime.Today;
+        public DateTime? RegistrationEnds { get; set; }
         public int RoundDurationInDays { get; set; } = 7;
         public string Location { get; set; } = string.Empty;
         public TournamentMode Mode { get; set; }
@@ -21,6 +21,34 @@ namespace TennisManager.Models
         public string CreatedByUserId { get; set; } = string.Empty;
         public ApplicationUser CreatedByUser { get; set; } = null!;
 
+        // methods
+        public Tournament Clone()
+        {
+            return new Tournament
+            {
+                Id = Id,
+                Name = Name,
+                Description = Description,
+                Location = Location,
+                StartDate = StartDate,
+                RegistrationEnds = RegistrationEnds,
+                RoundDurationInDays = RoundDurationInDays,
+                MaxPlayers = MaxPlayers,
+                Mode = Mode,
+                Status = Status,
+                CreatedByUserId = CreatedByUserId,
+
+                Participants = Participants
+                    .Select(p => new TournamentParticipant
+                    {
+                        Id = p.Id,
+                        TournamentId = p.TournamentId,
+                        UserId = p.UserId,
+                        User = p.User
+                    })
+                    .ToList()
+            };
+        }
     }
 
     public enum TournamentMode
