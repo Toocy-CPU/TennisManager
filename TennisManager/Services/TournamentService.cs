@@ -29,6 +29,53 @@ namespace TennisManager.Services
 
             await _context.SaveChangesAsync();
         }
+        public async Task UpdateTournamentAsync(Tournament editedTournament)
+        {
+            var tournament = await _context.Tournaments
+                .Include(t => t.Participants)
+                .FirstAsync(t => t.Id == editedTournament.Id);
+
+
+            // normale Eigenschaften aktualisieren
+            tournament.Name = editedTournament.Name;
+            tournament.StartDate = editedTournament.StartDate;
+            tournament.RegistrationEnds = editedTournament.RegistrationEnds;
+            tournament.Location = editedTournament.Location;
+            tournament.Description = editedTournament.Description;
+            tournament.Mode = editedTournament.Mode;
+            tournament.MaxPlayers = editedTournament.MaxPlayers;
+            tournament.RoundDurationInDays = editedTournament.RoundDurationInDays;
+
+
+            // entfernte Teilnehmer
+            var removedParticipants = tournament.Participants
+                .ExceptBy(
+                    editedTournament.Participants.Select(p => p.Id),
+                    p => p.Id)
+                .ToList();
+
+            foreach (var participant in removedParticipants)
+            {
+                tournament.Participants.Remove(participant);
+                _context.TournamentParticipants.Remove(participant);
+            }
+
+
+            //// neue Teilnehmer
+            //var addedParticipants = editedTournament.Participants
+            //    .Where(newParticipant =>
+            //        !tournament.Participants
+            //            .Any(oldParticipant => oldParticipant.Id == newParticipant.Id))
+            //    .ToList();
+
+            //foreach (var participant in addedParticipants)
+            //{
+            //    tournament.Participants.Add(participant);
+            //}
+
+
+            await _context.SaveChangesAsync();
+        }
         public async Task<RegistrationResult> RegisterPlayerAsync(int tournamentId, string userId)
         {
             var tournament = await _context.Tournaments

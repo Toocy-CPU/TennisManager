@@ -436,13 +436,12 @@ else
             return;
         }
 
-        // später Service aufrufen
+        await TournamentService.UpdateTournamentAsync(editingTournament);
 
-        tournament = editingTournament;
         editingTournament = null;
     }
     private void RemoveParticipant(TournamentParticipant participant)
     {
-        
+        editingTournament?.Participants.Remove(participant);
     }
 }
