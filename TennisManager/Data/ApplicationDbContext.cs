@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 using TennisManager.Models;
 
 namespace TennisManager.Data
@@ -29,6 +30,18 @@ namespace TennisManager.Data
                 .HasOne(m => m.PlayerB)
                 .WithMany()
                 .HasForeignKey(m => m.PlayerBId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Tournament>()
+                .HasOne(t => t.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(t => t.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Match>()
+                .HasOne(m => m.Winner)
+                .WithMany()
+                .HasForeignKey(m => m.WinnerId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

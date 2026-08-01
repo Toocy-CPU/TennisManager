@@ -1,8 +1,10 @@
 ﻿@page "/tournaments/create"
+@using System.Security.Claims
 @using TennisManager.Models
 @using TennisManager.Services
 @inject TournamentService TournamentService
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Neues Turnier</PageTitle>
 
@@ -21,23 +23,20 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudDatePicker Label="Datum"
-					@bind-Value="Tournament.Date"
+                <MudDatePicker Label="Startdatum"
+					@bind-Value="Tournament.StartDate"
                     Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudSelect T="TournamentMode" 
-                    Label="Modus" @bind-Value="Tournament.Mode" 
-                    Variant="Variant.Outlined">
-                    @foreach(var mode in Enum.GetValues<TournamentMode>())
-                    {
-                        <MudSelectItem Value="@mode">
-                            @mode
-                        </MudSelectItem>
-                    }
-                </MudSelect>
+
+                <MudDatePicker Label="Anmeldeschluss"
+                               @bind-Value="Tournament.RegistrationEnds"
+                               Variant="Variant.Outlined" />
+
             </MudItem>
+
+            
 
             <MudItem xs="12" md="6">
 
@@ -45,6 +44,29 @@
                     @bind-Value="Tournament.Location"
                     Variant="Variant.Outlined" />
 
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+
+                <MudNumericField T="int"
+                                 Label="Rundendauer (Tage)"
+                                 @bind-Value="Tournament.RoundDurationInDays"
+                                 Variant="Variant.Outlined"
+                                 Min="1" />
+
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSelect T="TournamentMode"
+                           Label="Modus" @bind-Value="Tournament.Mode"
+                           Variant="Variant.Outlined">
+                    @foreach (var mode in Enum.GetValues<TournamentMode>())
+                    {
+                        <MudSelectItem Value="@mode">
+                            @mode
+                        </MudSelectItem>
+                    }
+                </MudSelect>
             </MudItem>
 
             <MudItem xs="12" md="6">
@@ -68,7 +90,8 @@
                     Justify="Justify.FlexEnd"
                     Spacing="2">
 
-                    <MudButton Variant="Variant.Text">
+                    <MudButton Variant="Variant.Text"
+                        OnClick="CancelCreateTournament">
                         Abbrechen
                     </MudButton>
 
@@ -92,8 +115,22 @@
     // works for now but on a longterm the form should be submitted with the button to validate fields
     private async Task SaveTournament()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId is null)
+        {
+            return;
+        }
+
+        Tournament.CreatedByUserId = userId;
+
         await TournamentService.CreateTournamentAsync(Tournament);
 
+        Navigation.NavigateTo("/Tournaments");
+    }
+    private void CancelCreateTournament()
+    {
         Navigation.NavigateTo("/Tournaments");
     }
 }

@@ -1,27 +1,209 @@
 ﻿@page "/tournaments/{TournamentId:int}"
+@using TennisManager.Extensions
 @using TennisManager.Models
 @using TennisManager.Services
 @inject TournamentService TournamentService
+@inject NavigationManager Navigation
 
-<MudPaper Class="pa-4">
+<PageTitle>Turnierdetails</PageTitle>
 
-    <MudText Typo="Typo.h4">
-        @tournament?.Name
-    </MudText>
+@if (tournament is null)
+{
+	<MudText>Turnier wird geladen...</MudText>
+}
+else
+{
+    <MudStack Row="true"
+              Justify="Justify.SpaceBetween"
+              AlignItems="AlignItems.Center"
+              Class="mb-4">
 
-    <MudText>
-        📍 @tournament?.Location
-    </MudText>
+        <MudButton Variant="Variant.Text"
+                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                   OnClick="GoBack">
+            Zurück
+        </MudButton>
 
-    <MudText>
-        📅 @tournament?.Date.ToShortDateString()
-    </MudText>
+        <MudStack Row="true" Spacing="2">
 
-    <MudText>
-        👥 @tournament?.Participants.Count Teilnehmer
-    </MudText>
+            <MudButton Variant="Variant.Outlined"
+                       StartIcon="@Icons.Material.Filled.Edit"
+                       Disabled="true">
+                Bearbeiten
+            </MudButton>
 
-</MudPaper>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.PlayArrow"
+                       Disabled="true">
+                Turnier starten
+            </MudButton>
+
+        </MudStack>
+
+    </MudStack>
+     <MudGrid Spacing="3">
+
+        <!-- Linke Seite -->
+        <MudItem xs="12" md="7">
+
+            <MudPaper Class="pa-6 h-100" Elevation="2">
+
+                <MudText Typo="Typo.h4" GutterBottom="true">
+                    @tournament.Name
+                </MudText>
+
+                <MudDivider Class="mb-4" />
+
+                <MudGrid Spacing="4">
+
+                    <MudItem xs="12" md="6">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" />
+                            <MudText>
+                                Start: @tournament.StartDate.ToShortDateString()
+                            </MudText>
+                        </MudStack>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.Groups" />
+                            <MudText>
+                                @tournament.Participants.Count / @tournament.MaxPlayers Teilnehmer
+                            </MudText>
+                        </MudStack>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.EventBusy" />
+                            <MudText>
+                                Anmeldung bis: @tournament.RegistrationEnds.ToShortDateString()
+                            </MudText>
+                        </MudStack>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule" />
+                            <MudText>
+                                @tournament.RoundDurationInDays Tage pro Runde
+                            </MudText>
+                        </MudStack>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" />
+                            <MudText>
+                                @tournament.Location
+                            </MudText>
+                        </MudStack>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.SportsTennis" />
+                            <MudText>
+                                @tournament.Mode
+                            </MudText>
+                        </MudStack>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+
+                            <MudChip T="string"
+                                     Color="@tournament.Status.GetColor()"
+                                     Icon="@tournament.Status.GetIcon()"
+                                     Variant="Variant.Filled"
+                                     Class="w-100">
+
+                                @tournament.Status.GetText()
+
+                            </MudChip>
+
+                        </MudStack>
+                    </MudItem>
+
+                </MudGrid>
+
+                <MudDivider Class="my-4" />
+
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    Beschreibung
+                </MudText>
+
+                @if (string.IsNullOrWhiteSpace(tournament.Description))
+                {
+                    <MudText Color="Color.Secondary">
+                        Keine Beschreibung vorhanden.
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>
+                        @tournament.Description
+                    </MudText>
+                }
+
+            </MudPaper>
+
+        </MudItem>
+
+        <!-- Rechte Seite -->
+        <MudItem xs="12" md="5">
+
+            <MudPaper Class="pa-6 h-100" Elevation="2">
+
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+
+                    <MudText Typo="Typo.h5">
+                        Teilnehmer
+                    </MudText>
+
+                    <MudChip T="int" Color="Color.Primary" Variant="Variant.Outlined">
+                        @tournament.Participants.Count
+                    </MudChip>
+
+                </MudStack>
+
+                <MudDivider Class="my-4" />
+
+                @if (tournament.Participants.Any())
+                {
+                    <MudList T="TournamentParticipant">
+
+                        @foreach (var participant in tournament.Participants.OrderBy(p => p.User.FullName))
+                        {
+                            <MudListItem T="TournamentParticipant" Value="@participant">
+
+                                <MudAvatar Size="Size.Small"
+                                           Icon="@Icons.Material.Filled.Person"
+                                           Class="me-3" />
+
+                                @participant.User.FullName
+
+                            </MudListItem>
+                        }
+
+                    </MudList>
+                }
+                else
+                {
+                    <MudText Color="Color.Secondary">
+                        Noch keine Teilnehmer angemeldet.
+                    </MudText>
+                }
+
+            </MudPaper>
+
+        </MudItem>
+
+    </MudGrid>
+}
+
 @code {
 	[Parameter]
 	public int TournamentId { get; set; }
@@ -32,4 +214,9 @@
 	{
 		tournament = await TournamentService.GetTournamentAsync(TournamentId);
 	}
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/tournaments");
+    }
 }

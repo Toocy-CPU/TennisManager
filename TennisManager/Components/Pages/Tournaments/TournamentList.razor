@@ -1,5 +1,6 @@
 ﻿@page "/tournaments"
 @using TennisManager.Components.Shared
+@using TennisManager.Extensions
 @using TennisManager.Services
 @using TennisManager.Models
 @using System.Security.Claims
@@ -10,6 +11,29 @@
 @inject ISnackbar Snackbar
 
 <PageTitle>Turniere</PageTitle>
+
+<MudStack Row="true"
+          Justify="Justify.SpaceBetween"
+          AlignItems="AlignItems.Center"
+          Class="mb-4">
+
+    <MudText Typo="Typo.h4">
+        Turniere
+    </MudText>
+
+    @if (currentUserId is not null)
+    {
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="CreateTournament">
+
+            Turnier erstellen
+
+        </MudButton>
+    }
+
+</MudStack>
 
 <MudGrid Spacing="3">
 
@@ -25,36 +49,77 @@
                         @tournament.Name
                     </MudText>
 
-                    <MudDivider Class="my-2"/>
+                    <MudDivider Class="my-3" />
 
-                    <MudStack Spacing="1">
+                    <MudGrid Spacing="2">
 
-                        <MudText>
-                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth"
-                                     Class="me-2" />
-                            @tournament.Date.ToShortDateString()
-                        </MudText>
+                        <MudItem xs="12" sm="6">
+                            <MudStack Row="true" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Class="me-2" />
+                                <MudText>
+                                    Start: @tournament.StartDate.ToShortDateString()
+                                </MudText>
+                            </MudStack>
+                        </MudItem>
 
-                        <MudText>
-                            <MudIcon Icon="@Icons.Material.Filled.LocationOn"
-                                     Class="me-2" />
-                            @tournament.Location
-                        </MudText>
+                        <MudItem xs="12" sm="6">
+                            <MudStack Row="true" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.Groups" Class="me-2" />
+                                <MudText>
+                                    @tournament.Participants.Count / @tournament.MaxPlayers Teilnehmer
+                                </MudText>
+                            </MudStack>
+                        </MudItem>
 
-                        <MudText>
-                            <MudIcon Icon="@Icons.Material.Filled.Groups"
-                                     Class="me-2" />
-                            @tournament.Participants.Count / @tournament.MaxPlayers Teilnehmer
-                        </MudText>
+                        <MudItem xs="12" sm="6">
+                            <MudStack Row="true" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.EventBusy" Class="me-2" />
+                                <MudText>
+                                    Anmeldung bis: @tournament.RegistrationEnds.ToShortDateString()
+                                </MudText>
+                            </MudStack>
+                        </MudItem>
 
-                        <MudChip T="string" Color="@GetStatusColor(tournament.Status)"
-                                 Variant="Variant.Filled">
+                        <MudItem xs="12" sm="6">
+                            <MudStack Row="true" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.Schedule" Class="me-2" />
+                                <MudText>
+                                    @tournament.RoundDurationInDays Tage pro Runde
+                                </MudText>
+                            </MudStack>
+                        </MudItem>
 
-                            @tournament.Status
+                        <MudItem xs="12" sm="6">
+                            <MudStack Row="true" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Class="me-2" />
+                                <MudText>
+                                    @tournament.Location
+                                </MudText>
+                            </MudStack>
+                        </MudItem>
 
-                        </MudChip>
+                        <MudItem xs="12" sm="6">
+                            <MudStack Row="true" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.SportsTennis" Class="me-2" />
+                                <MudText>
+                                    @tournament.Mode
+                                </MudText>
+                            </MudStack>
+                        </MudItem>
 
-                    </MudStack>
+                    </MudGrid>
+
+                    <MudDivider Class="my-3" />
+
+                    <MudChip T="string"
+                             Icon="@tournament.Status.GetIcon()"
+                             Color="@tournament.Status.GetColor()"
+                             Variant="Variant.Filled"
+                             Class="w-100">
+
+                        @tournament.Status.GetText()
+
+                    </MudChip>
 
                 </MudCardContent>
 
@@ -62,32 +127,36 @@
 
                     <MudButton Variant="Variant.Text"
                                StartIcon="@Icons.Material.Filled.Visibility"
-                                OnClick="() => OpenTournamentDetails(tournament.Id)">
+                               OnClick="() => OpenTournamentDetails(tournament.Id)">
 
                         Details
 
                     </MudButton>
 
                     <MudSpacer />
-                    @if (currentUserId is null)
+
+                    @if (currentUserId is not null)
                     {
-                        // nichts anzeigen
-                    }
-                    else if (IsRegistered(tournament))
-                    {
-                        <MudButton Color="Color.Error"
-                                   Variant="Variant.Filled"
-                                   OnClick="() => UnregisterFromTournament(tournament.Id)">
-                            Abmelden
-                        </MudButton>
-                    }
-                    else
-                    {
-                        <MudButton Color="Color.Primary"
-                                   Variant="Variant.Filled"
-                                   OnClick="() => RegisterForTournament(tournament.Id)">
-                            Anmelden
-                        </MudButton>
+                        @if (IsRegistered(tournament))
+                        {
+                            <MudButton Color="Color.Error"
+                                       Variant="Variant.Filled"
+                                       OnClick="() => UnregisterFromTournament(tournament.Id)">
+
+                                Abmelden
+
+                            </MudButton>
+                        }
+                        else
+                        {
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       OnClick="() => RegisterForTournament(tournament.Id)">
+
+                                Anmelden
+
+                            </MudButton>
+                        }
                     }
 
                 </MudCardActions>
@@ -165,16 +234,6 @@
         ShowRegistrationResultSnackbar(registrationResult);
     }
 
-    private Color GetStatusColor(TournamentStatus status)
-    {
-        return status switch
-        {
-            TournamentStatus.RegistrationOpen => Color.Success,
-            TournamentStatus.InProgress => Color.Info,
-            TournamentStatus.RegistrationClosed => Color.Default,
-            _ => Color.Default
-        };
-    }
     private bool IsRegistered(Tournament tournament)
     {        
 
