@@ -43,6 +43,11 @@ namespace TennisManager.Data
                 .WithMany()
                 .HasForeignKey(m => m.WinnerId)
                 .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Match>()
+                .HasOne(m => m.NextMatch)
+                .WithMany()
+                .HasForeignKey(m => m.NextMatchId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

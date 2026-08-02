@@ -1,0 +1,87 @@
+﻿.bracket-container {
+    display: flex;
+    gap: 48px;
+    overflow-x: auto;
+    padding: 24px;
+    align-items: flex-start;
+}
+
+.round {
+    display: flex;
+    flex-direction: column;
+    min-width: 260px;
+}
+
+.round-title {
+    text-align: center;
+    margin-bottom: 24px;
+    position: sticky;
+    top: 0;
+}
+
+.round-matches {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Runde 1 */
+.level-0 {
+    gap: 24px;
+}
+
+/* Runde 2 */
+.level-1 {
+    gap: 110px;
+    margin-top: 70px;
+}
+
+/* Runde 3 */
+.level-2 {
+    gap: 270px;
+    margin-top: 170px;
+}
+
+/* Runde 4 */
+.level-3 {
+    gap: 590px;
+    margin-top: 360px;
+}
+
+.match-card {
+    width: 240px;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: .2s;
+}
+
+    .match-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 22px rgba(0,0,0,.18);
+    }
+
+.player {
+    padding: 12px 16px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+}
+
+    .player.winner {
+        font-weight: bold;
+        background: rgba(76,175,80,.15);
+    }
+
+@media (max-width:900px) {
+    .bracket-container {
+        gap: 28px;
+        padding: 12px;
+    }
+
+    .round {
+        min-width: 220px;
+    }
+
+    .match-card {
+        width: 210px;
+    }
+}

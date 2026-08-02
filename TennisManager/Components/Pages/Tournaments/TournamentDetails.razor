@@ -4,6 +4,7 @@
 @using TennisManager.Services
 @inject TournamentService TournamentService
 @inject NavigationManager Navigation
+@inject TournamentBracketService TournamentBracketService
 
 <PageTitle>Turnierdetails</PageTitle>
 
@@ -30,6 +31,15 @@ else if (editingTournament == null)
                        StartIcon="@Icons.Material.Filled.Edit"
                        OnClick="StartEditing">
                 Bearbeiten
+            </MudButton>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.AccountTree"
+                       OnClick="GenerateBracket">
+
+                Baum erstellen
+
             </MudButton>
 
             <MudButton Variant="Variant.Filled"
@@ -199,6 +209,10 @@ else if (editingTournament == null)
 
             </MudPaper>
 
+        </MudItem>
+
+        <MudItem>
+            <TournamentBracket Matches="tournament.Matches.ToList()" />
         </MudItem>
 
     </MudGrid>
@@ -443,5 +457,11 @@ else
     private void RemoveParticipant(TournamentParticipant participant)
     {
         editingTournament?.Participants.Remove(participant);
+    }
+    private async Task GenerateBracket()
+    {
+        await TournamentBracketService.GenerateBracketAsync(tournament!.Id);
+
+        tournament = await TournamentService.GetTournamentAsync(tournament.Id);
     }
 }

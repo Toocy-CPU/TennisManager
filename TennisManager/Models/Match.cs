@@ -11,13 +11,17 @@ namespace TennisManager.Models
         public DateTime Deadline { get; set; }
         public MatchStatus Status { get; set; }
         public MatchOutcome Outcome { get; set; }
-        public string PlayerAId { get; set; } = string.Empty;
-        public ApplicationUser PlayerA { get; set; } = null!;
-        public string PlayerBId { get; set; } = string.Empty;
-        public ApplicationUser PlayerB { get; set; } = null!;
+        public string? PlayerAId { get; set; }
+        public ApplicationUser? PlayerA { get; set; }
+        public string? PlayerBId { get; set; }
+        public ApplicationUser? PlayerB { get; set; }
         public string? WinnerId { get; set; }
         public ApplicationUser? Winner { get; set; }
+        public int? NextMatchId { get; set; }
+        public Match? NextMatch { get; set; }
+        public NextMatchSlot NextMatchSlot { get; set; } = NextMatchSlot.None;
         public ICollection<SetResult> Sets { get; set; } = new List<SetResult>();
+        
     }
     public enum MatchStatus
     {
@@ -32,5 +36,11 @@ namespace TennisManager.Models
         WalkoverA,
         WalkoverB,
         DoubleForfeit
+    }
+    public enum NextMatchSlot
+    {
+        None,
+        PlayerA,
+        PlayerB
     }
 }

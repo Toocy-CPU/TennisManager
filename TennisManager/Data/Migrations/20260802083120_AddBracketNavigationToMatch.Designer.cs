@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TennisManager.Data;
 
@@ -11,9 +12,11 @@ using TennisManager.Data;
 namespace TennisManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260802083120_AddBracketNavigationToMatch")]
+    partial class AddBracketNavigationToMatch
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -255,9 +258,11 @@ namespace TennisManager.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("PlayerAId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PlayerBId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Round")
@@ -460,12 +465,14 @@ namespace TennisManager.Migrations
                     b.HasOne("TennisManager.Data.ApplicationUser", "PlayerA")
                         .WithMany()
                         .HasForeignKey("PlayerAId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("TennisManager.Data.ApplicationUser", "PlayerB")
                         .WithMany()
                         .HasForeignKey("PlayerBId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("TennisManager.Models.Tournament", "Tournament")
                         .WithMany("Matches")

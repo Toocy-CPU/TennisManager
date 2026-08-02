@@ -1,0 +1,83 @@
+﻿@using TennisManager.Models
+@using TennisManager.Services
+@inject TournamentService TournamentService
+
+@if (!Matches.Any())
+{
+    <MudAlert Severity="Severity.Info" Dense="true">
+        Noch kein Turnierbaum vorhanden.
+    </MudAlert>
+}
+else
+{
+    var rounds = Matches
+        .GroupBy(m => m.Round)
+        .OrderBy(g => g.Key);
+
+    <div class="bracket-container">
+
+        @foreach (var round in rounds)
+        {
+            var roundIndex = round.Key - 1;
+
+            <div class="round">
+
+                <div class="round-title">
+
+                    <MudText Typo="Typo.h6">
+                        @GetRoundName(round.Key)
+                    </MudText>
+
+                </div>
+
+                <div class="round-matches level-@roundIndex">
+
+                    @foreach (var match in round)
+                    {
+                        <MudPaper Class="match-card" Elevation="3">
+
+                            <div class="player @(match.WinnerId == match.PlayerAId ? "winner" : "")">
+
+                                <span>@(match.PlayerA?.FullName ?? "TBD")</span>
+
+                            </div>
+
+                            <MudDivider />
+
+                            <div class="player @(match.WinnerId == match.PlayerBId ? "winner" : "")">
+
+                                <span>@(match.PlayerB?.FullName ?? "TBD")</span>
+
+                            </div>
+
+                        </MudPaper>
+                    }
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+}
+
+@code {
+    [Parameter]
+    public List<Match> Matches { get; set; } = [];
+
+    private string GetRoundName(int round)
+    {
+        var maxRound = Matches.Max(m => m.Round);
+
+        if (round == maxRound)
+            return "Finale";
+
+        if (round == maxRound - 1)
+            return "Halbfinale";
+
+        if (round == maxRound - 2)
+            return "Viertelfinale";
+
+        return $"Runde {round}";
+    }
+}

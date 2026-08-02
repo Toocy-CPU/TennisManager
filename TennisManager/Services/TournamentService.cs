@@ -15,14 +15,36 @@ namespace TennisManager.Services
 
         public async Task<List<Tournament>> GetTournamentsAsync()
         {
-            return await _context.Tournaments.Include(p => p.Participants).ToListAsync();
+            return await _context.Tournaments
+                .Include(p => p.Participants)
+                .ToListAsync();
         }
         public async Task<Tournament?> GetTournamentAsync(int tournamentId)
         {
             return await _context.Tournaments
-                .Include(p => p.Participants)
-                .ThenInclude(u => u.User).FirstOrDefaultAsync(t => t.Id == tournamentId);
+                .Include(t => t.Participants)
+                    .ThenInclude(p => p.User)
+                .Include(t => t.Matches)
+                    .ThenInclude(m => m.PlayerA)
+                .Include(t => t.Matches)
+                    .ThenInclude(m => m.PlayerB)
+                .Include(t => t.Matches)
+                    .ThenInclude(m => m.Winner)
+                .Include(t => t.Matches)
+                    .ThenInclude(m => m.Sets)
+                .FirstOrDefaultAsync(t => t.Id == tournamentId);
         }
+        //public async Task<List<Match>> GetBracketAsync(int tournamentId)
+        //{
+        //    return await _context.Matches
+        //        .Where(m => m.TournamentId == tournamentId)
+        //        .Include(m => m.PlayerA)
+        //        .Include(m => m.PlayerB)
+        //        .Include(m => m.Winner)
+        //        .Include(m => m.Sets)
+        //        .OrderBy(m => m.Round)
+        //        .ToListAsync();
+        //}
         public async Task CreateTournamentAsync(Tournament tournament)
         {
             _context.Tournaments.Add(tournament);
@@ -59,20 +81,6 @@ namespace TennisManager.Services
                 tournament.Participants.Remove(participant);
                 _context.TournamentParticipants.Remove(participant);
             }
-
-
-            //// neue Teilnehmer
-            //var addedParticipants = editedTournament.Participants
-            //    .Where(newParticipant =>
-            //        !tournament.Participants
-            //            .Any(oldParticipant => oldParticipant.Id == newParticipant.Id))
-            //    .ToList();
-
-            //foreach (var participant in addedParticipants)
-            //{
-            //    tournament.Participants.Add(participant);
-            //}
-
 
             await _context.SaveChangesAsync();
         }

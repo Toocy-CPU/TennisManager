@@ -45,6 +45,7 @@ namespace TennisManager
             // user added services etc
             builder.Services.AddMudServices();
             builder.Services.AddScoped<TournamentService>();
+            builder.Services.AddScoped<TournamentBracketService>();
 
             var app = builder.Build();
 
