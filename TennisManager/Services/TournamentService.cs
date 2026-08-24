@@ -51,6 +51,30 @@ namespace TennisManager.Services
 
             await _context.SaveChangesAsync();
         }
+        public async Task DeleteTournamentAsync(Tournament tournament)
+        {
+            var participants = await _context.TournamentParticipants
+                .Where(tp => tp.TournamentId == tournament.Id)
+                .ToListAsync();
+
+            _context.TournamentParticipants.RemoveRange(participants);
+
+            var matches = await _context.Matches
+                .Where(m => m.TournamentId == tournament.Id)
+                .ToListAsync();
+
+            var matchIds = matches.Select(m => m.Id);
+
+            var setResults = await _context.SetResults
+                .Where(sr => matchIds.Contains(sr.MatchId))
+                .ToListAsync();
+
+            _context.SetResults.RemoveRange(setResults);
+            _context.Matches.RemoveRange(matches);
+            _context.Tournaments.Remove(tournament);
+
+            await _context.SaveChangesAsync();
+        }
         public async Task UpdateTournamentAsync(Tournament editedTournament)
         {
             var tournament = await _context.Tournaments
@@ -81,6 +105,21 @@ namespace TennisManager.Services
                 tournament.Participants.Remove(participant);
                 _context.TournamentParticipants.Remove(participant);
             }
+
+            // Neue Teilnehmer
+            var newParticipants = editedTournament.Participants
+                .Where(p => p.Id == 0)
+                .ToList();
+
+            foreach (var participant in newParticipants)
+            {
+                tournament.Participants.Add(new TournamentParticipant
+                {
+                    TournamentId = tournament.Id,
+                    UserId = participant.UserId
+                });
+            }
+
 
             await _context.SaveChangesAsync();
         }

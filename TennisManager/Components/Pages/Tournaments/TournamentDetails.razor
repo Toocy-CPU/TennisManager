@@ -1,10 +1,17 @@
 ﻿@page "/tournaments/{TournamentId:int}"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using TennisManager.Components.Shared
+@using TennisManager.Data
 @using TennisManager.Extensions
 @using TennisManager.Models
 @using TennisManager.Services
 @inject TournamentService TournamentService
 @inject NavigationManager Navigation
 @inject TournamentBracketService TournamentBracketService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject UserManager<ApplicationUser> UserManager
 
 <PageTitle>Turnierdetails</PageTitle>
 
@@ -26,6 +33,13 @@ else if (editingTournament == null)
         </MudButton>
 
         <MudStack Row="true" Spacing="2">
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Secondary"
+                       StartIcon="@Icons.Material.Filled.Delete"
+                       OnClick="DeleteTournament">
+                Löschen
+            </MudButton>
 
             <MudButton Variant="Variant.Outlined"
                        StartIcon="@Icons.Material.Filled.Edit"
@@ -407,6 +421,39 @@ else
                         Noch keine Teilnehmer angemeldet.
                     </MudText>
                 }
+                @if (availablePlayers.Any())
+                {
+                    <MudList T="ApplicationUser">
+
+                        @foreach (var user in availablePlayers.OrderBy(u => u.FullName))
+                        {
+                            <MudListItem T="ApplicationUser"
+                                         Value="@user">
+
+                                <MudAvatar Size="Size.Small"
+                                           Icon="@Icons.Material.Filled.Person"
+                                           Class="me-3" />
+
+                                <MudText Class="flex-grow-1">
+                                    @user.FullName
+                                </MudText>
+
+                                <MudIconButton Icon="@Icons.Material.Filled.PersonAdd"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               OnClick="() => AddParticipant(user)" />
+
+                            </MudListItem>
+                        }
+
+                    </MudList>
+                }
+                else
+                {
+                    <MudText Color="Color.Secondary">
+                        Alle Spieler nehmen bereits teil.
+                    </MudText>
+                }
 
             </MudPaper>
 
@@ -422,9 +469,22 @@ else
     private Tournament? tournament { get; set; }
     private Tournament? editingTournament { get; set; }
 
+    private List<ApplicationUser> users = new();
+    private List<ApplicationUser> availablePlayers { get; set; } = new();
+
+
     protected override async Task OnParametersSetAsync()
     {
         tournament = await TournamentService.GetTournamentAsync(TournamentId);
+        users = await UserManager.Users.ToListAsync();
+    }
+
+    private void LoadAvailablePlayers()
+    {
+        availablePlayers = users
+            .Where(user => !editingTournament!.Participants
+                .Any(participant => participant.UserId == user.Id))
+            .ToList();
     }
 
     private void GoBack()
@@ -437,7 +497,10 @@ else
         {
             return;
         }
+
         editingTournament = tournament?.Clone();
+        LoadAvailablePlayers();
+
     }
     private void CancelEditing()
     {
@@ -457,11 +520,60 @@ else
     private void RemoveParticipant(TournamentParticipant participant)
     {
         editingTournament?.Participants.Remove(participant);
+
+        availablePlayers.Add(participant.User);
     }
+    private void AddParticipant(ApplicationUser user)
+    {
+        var participant = new TournamentParticipant
+        {
+            TournamentId = editingTournament!.Id,
+            UserId = user.Id,
+            User = user
+        };
+
+        editingTournament.Participants.Add(participant);
+
+        availablePlayers.Remove(user);
+    }
+
     private async Task GenerateBracket()
     {
         await TournamentBracketService.GenerateBracketAsync(tournament!.Id);
 
         tournament = await TournamentService.GetTournamentAsync(tournament.Id);
+    }
+    private async Task DeleteTournament()
+    {
+        if(tournament is null)
+        {
+            return;
+        }     
+
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.Title, "Löschen" },
+            { x => x.Message, "Möchten Sie das Turnier wirklich löschen?" },
+            { x => x.ConfirmButtonText, "Löschen"}
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>(
+        title: null,
+        parameters);
+
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult is null || dialogResult.Canceled)
+        {
+            return;
+        }
+
+        await TournamentService.DeleteTournamentAsync(tournament);
+
+        Snackbar.Add("Turnier erfolgreich gelöscht",
+                    Severity.Error);
+
+        await InvokeAsync(() =>
+        Navigation.NavigateTo("/tournaments"));
     }
 }
