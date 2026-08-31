@@ -1,6 +1,9 @@
-﻿@using TennisManager.Models
+﻿@using TennisManager.Components.Shared
+@using TennisManager.Models
 @using TennisManager.Services
 @inject TournamentService TournamentService
+@inject TournamentBracketService TournamentBracketService
+@inject IDialogService DialogService
 
 @if (!Matches.Any())
 {
@@ -34,11 +37,24 @@ else
 
                     @foreach (var match in round)
                     {
-                        <MudPaper Class="match-card" Elevation="3">
+                        <MudPaper Class="match-card" Elevation="3"
+                                  @onclick="() => OpenResultDialog(match)"
+                                  Style="cursor: pointer;">
 
                             <div class="player @(match.WinnerId == match.PlayerAId ? "winner" : "")">
 
-                                <span>@(match.PlayerA?.FullName ?? "TBD")</span>
+                                <span class="player-name">
+                                    @(match.PlayerA?.FullName ?? "TBD")
+                                </span>
+
+                                <div class="scores">
+                                    @foreach (var set in match.Sets.OrderBy(s => s.SetNumber))
+                                    {
+                                        <span class="score">
+                                            @(set.TieBreakA ?? set.PlayerAGames)
+                                        </span>
+                                    }
+                                </div>
 
                             </div>
 
@@ -46,7 +62,18 @@ else
 
                             <div class="player @(match.WinnerId == match.PlayerBId ? "winner" : "")">
 
-                                <span>@(match.PlayerB?.FullName ?? "TBD")</span>
+                                <span class="player-name">
+                                    @(match.PlayerB?.FullName ?? "TBD")
+                                </span>
+
+                                <div class="scores">
+                                    @foreach (var set in match.Sets.OrderBy(s => s.SetNumber))
+                                    {
+                                        <span class="score">
+                                            @(set.TieBreakB ?? set.PlayerBGames)
+                                        </span>
+                                    }
+                                </div>
 
                             </div>
 
@@ -79,5 +106,26 @@ else
             return "Viertelfinale";
 
         return $"Runde {round}";
+    }
+
+    private async Task OpenResultDialog(Match match)
+    {
+        var parameters = new DialogParameters<MatchResultDialog>
+        {
+            { x => x.Match, match }
+        };
+
+        var dialog = await DialogService.ShowAsync<MatchResultDialog>(
+            "Ergebnis eingeben",
+            parameters);
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var setResults = (List<SetResult>)result.Data;
+
+            await TournamentBracketService.SaveMatchResultsAsync(setResults);
+        }
     }
 }

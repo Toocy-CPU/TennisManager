@@ -72,7 +72,7 @@ namespace TennisManager.Services
             {
                 int matchIndex = i / 2;
 
-                if (i %  2 == 0)
+                if (i % 2 == 0)
                 {
                     bracket[0][matchIndex].PlayerAId = players[i].UserId;
                 }
@@ -82,14 +82,14 @@ namespace TennisManager.Services
                 }
             }
             // add nextMatchId and nextMatchSlot to the bracket
-            for(int i = 0; i < bracket.Count -1; i++ )
+            for (int i = 0; i < bracket.Count - 1; i++)
             {
                 var bracketA = bracket[i];
                 var bracketB = bracket[i + 1];
-                for( int j = 0; j < bracketA.Count; j++ )
+                for (int j = 0; j < bracketA.Count; j++)
                 {
                     bracketA[j].NextMatch = bracketB[j / 2];
-                    bracketA[j].NextMatchSlot = 
+                    bracketA[j].NextMatchSlot =
                         j % 2 == 0 ? NextMatchSlot.PlayerA : NextMatchSlot.PlayerB;
                 }
             }
@@ -104,6 +104,23 @@ namespace TennisManager.Services
         private static bool IsPowerOfTwo(int value)
         {
             return value > 1 && (value & (value - 1)) == 0;
+        }
+
+        public async Task SaveMatchResultsAsync(List<SetResult> setResults)
+        {
+            foreach (var setResult in setResults)
+            {
+                if (setResult.Id == 0)
+                {
+                    _context.SetResults.Add(setResult);
+                }
+                else
+                {
+                    _context.SetResults.Update(setResult);
+                }
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

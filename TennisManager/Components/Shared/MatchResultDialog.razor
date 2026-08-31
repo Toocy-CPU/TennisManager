@@ -1,0 +1,95 @@
+﻿@using TennisManager.Models
+
+<MudDialog>
+    <DialogContent>
+
+        <MudForm @ref="form">
+
+            @foreach (var set in setResults)
+            {
+
+
+                <MudText Typo="Typo.h6" Class="mb-2">
+                    Satz @(set.SetNumber)
+                </MudText>
+
+                <MudGrid Class="mb-4">
+
+                    <MudItem xs="6">
+                        <MudNumericField @bind-Value="set.PlayerAGames"
+                                         Label="@Match.PlayerA?.FullName"
+                                         Variant="Variant.Outlined"
+                                         Min="0" />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField @bind-Value="set.PlayerBGames"
+                                         Label="@Match.PlayerB?.FullName"
+                                         Variant="Variant.Outlined"
+                                         Min="0" />
+                    </MudItem>
+
+                </MudGrid>
+            }
+
+        </MudForm>
+
+    </DialogContent>
+
+    <DialogActions>
+
+        <MudButton OnClick="Cancel">
+            Abbrechen
+        </MudButton>
+
+        <MudButton OnClick="Save"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary">
+            Speichern
+        </MudButton>
+
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Parameter]
+    public Match Match { get; set; } = null!;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private MudForm form = null!;
+
+    private List<SetResult> setResults = new();
+
+    protected override void OnInitialized()
+    {
+        if(Match.Sets.Count == 0)
+        {
+            for (int i = 1; i <= 3; i++)
+            {
+                setResults.Add(new SetResult
+                {
+                    MatchId = Match.Id,
+                    SetNumber = i
+                });
+            }
+        }
+        else
+        {
+            setResults = Match.Sets.ToList();
+        }
+
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void Save()
+    {
+        MudDialog.Close(DialogResult.Ok(setResults));
+    }
+}
