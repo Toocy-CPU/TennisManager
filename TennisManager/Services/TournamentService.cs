@@ -32,6 +32,8 @@ namespace TennisManager.Services
                     .ThenInclude(m => m.Winner)
                 .Include(t => t.Matches)
                     .ThenInclude(m => m.Sets)
+                .Include(t => t.Matches)
+                    .ThenInclude(m => m.NextMatch)
                 .FirstOrDefaultAsync(t => t.Id == tournamentId);
         }
         //public async Task<List<Match>> GetBracketAsync(int tournamentId)

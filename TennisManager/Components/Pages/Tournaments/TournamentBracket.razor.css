@@ -90,6 +90,12 @@
         background: rgba(76,175,80,.15);
     }
 
+.score sup {
+    font-size: 0.65em;
+    margin-left: 2px;
+    vertical-align: super;
+}
+
 @media (max-width:900px) {
     .bracket-container {
         gap: 28px;

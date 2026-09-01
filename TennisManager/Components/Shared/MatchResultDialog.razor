@@ -8,23 +8,73 @@
             @foreach (var set in setResults)
             {
 
+                if(set.SetNumber < 3)
+                {
+                    <MudText Typo="Typo.h6" Class="mb-2">
+                        Satz @(set.SetNumber)
+                    </MudText>
+
+                    <MudGrid Class="mb-4">
+
+                        <MudItem xs="6">
+                            <MudNumericField @bind-Value="set.PlayerAGames"
+                                             @bind-Value:after="() => OnGamesChanged(set)"
+                                             Label="@Match.PlayerA?.FullName"
+                                             Variant="Variant.Outlined"
+                                             Min="0"
+                                             Max="7" />
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudNumericField @bind-Value="set.PlayerBGames"
+                                             @bind-Value:after="() => OnGamesChanged(set)"
+                                             Label="@Match.PlayerB?.FullName"
+                                             Variant="Variant.Outlined"
+                                             Min="0"
+                                             Max="7" />
+                        </MudItem>
+
+                    </MudGrid>
+                }
+
+
+                @if (IsTieBreakNeeded(set))
+                {
+                    <MudText Typo="Typo.h6" Class="mb-2">
+                        Tiebreak Satz @(set.SetNumber)
+                    </MudText>
+
+                    <MudNumericField @bind-Value="set.TieBreakA"
+                                     Label="@Match.PlayerA?.FullName"
+                                     Variant="Variant.Outlined"
+                                     Min="0" />
+
+                    <MudNumericField @bind-Value="set.TieBreakB"
+                                     Label="@Match.PlayerB?.FullName"
+                                     Variant="Variant.Outlined"
+                                     Min="0" />
+                }
+            }
+            @if (IsThirdSetNeeded())
+            {
+                var set3 = GetOrCreateThirdSet();
 
                 <MudText Typo="Typo.h6" Class="mb-2">
-                    Satz @(set.SetNumber)
+                    Match-Tiebreak
                 </MudText>
 
-                <MudGrid Class="mb-4">
+                <MudGrid>
 
                     <MudItem xs="6">
-                        <MudNumericField @bind-Value="set.PlayerAGames"
-                                         Label="@Match.PlayerA?.FullName"
+                        <MudNumericField @bind-Value="set3.TieBreakA"
+                                         Label="@Match.PlayerA.FullName"
                                          Variant="Variant.Outlined"
                                          Min="0" />
                     </MudItem>
 
                     <MudItem xs="6">
-                        <MudNumericField @bind-Value="set.PlayerBGames"
-                                         Label="@Match.PlayerB?.FullName"
+                        <MudNumericField @bind-Value="set3.TieBreakB"
+                                         Label="@Match.PlayerB.FullName"
                                          Variant="Variant.Outlined"
                                          Min="0" />
                     </MudItem>
@@ -67,7 +117,7 @@
     {
         if(Match.Sets.Count == 0)
         {
-            for (int i = 1; i <= 3; i++)
+            for (int i = 1; i <= 2; i++)
             {
                 setResults.Add(new SetResult
                 {
@@ -91,5 +141,61 @@
     private void Save()
     {
         MudDialog.Close(DialogResult.Ok(setResults));
+    }
+
+    private bool IsTieBreakNeeded(SetResult set)
+    {
+        return (set.PlayerAGames == 6 && set.PlayerBGames == 6)
+            || (set.PlayerAGames == 7 && set.PlayerBGames == 6)
+            || (set.PlayerAGames == 6 && set.PlayerBGames == 7);
+    }
+
+    private bool IsThirdSetNeeded()
+    {
+        if (setResults.Count < 2)
+            return false;
+
+        var set1 = setResults[0];
+        var set2 = setResults[1];
+
+        bool playerAWonSet1 = set1.PlayerAGames > set1.PlayerBGames;
+        bool playerAWonSet2 = set2.PlayerAGames > set2.PlayerBGames;
+
+        bool playerBWonSet1 = set1.PlayerBGames > set1.PlayerAGames;
+        bool playerBWonSet2 = set2.PlayerBGames > set2.PlayerAGames;
+
+        return (playerAWonSet1 && playerBWonSet2)
+            || (playerBWonSet1 && playerAWonSet2);
+    }
+
+    private SetResult GetOrCreateThirdSet()
+    {
+        var set3 = setResults.FirstOrDefault(s => s.SetNumber == 3);
+
+        if (set3 == null)
+        {
+            set3 = new SetResult
+            {
+                MatchId = Match.Id,
+                SetNumber = 3
+            };
+
+            setResults.Add(set3);
+        }
+
+        return set3;
+    }
+
+    private void OnGamesChanged(SetResult set)
+    {
+        if (!IsTieBreakNeeded(set))
+        {
+            set.TieBreakA = null;
+            set.TieBreakB = null;
+        }
+        if(!IsThirdSetNeeded())
+        {
+            setResults.RemoveAll(s => s.SetNumber == 3);
+        }
     }
 }

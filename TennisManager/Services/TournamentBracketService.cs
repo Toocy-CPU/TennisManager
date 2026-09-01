@@ -106,21 +106,75 @@ namespace TennisManager.Services
             return value > 1 && (value & (value - 1)) == 0;
         }
 
-        public async Task SaveMatchResultsAsync(List<SetResult> setResults)
+        public async Task SaveMatchResultsAsync(List<SetResult> setResults,Match match)
         {
-            foreach (var setResult in setResults)
+            var matchId = setResults.First().MatchId;
+
+            var existingSets = await _context.SetResults
+                .Where(s => s.MatchId == matchId)
+                .ToListAsync();
+
+            foreach (var set in existingSets)
             {
-                if (setResult.Id == 0)
+                if (!setResults.Any(s => s.Id == set.Id))
+                    _context.SetResults.Remove(set);
+            }
+
+            foreach (var set in setResults)
+            {
+                if (set.Id == 0)
+                    _context.SetResults.Add(set);
+                else
+                    _context.SetResults.Update(set);
+            }
+
+            match.WinnerId = DetermineWinner(match, setResults);
+
+            TransferWinnerToNextMatch(match);
+
+            await _context.SaveChangesAsync();
+        }
+
+        private void TransferWinnerToNextMatch(Match match)
+        {
+            if (match.WinnerId != null && match.NextMatch != null)
+            {
+                if (match.NextMatchSlot == NextMatchSlot.PlayerA)
                 {
-                    _context.SetResults.Add(setResult);
+                    match.NextMatch.PlayerAId = match.WinnerId;
+                }
+                else if (match.NextMatchSlot == NextMatchSlot.PlayerB)
+                {
+                    match.NextMatch.PlayerBId = match.WinnerId;
+                }
+            }
+        }
+
+        private string? DetermineWinner(Match match,List<SetResult> setResults)
+        {
+            int playerAWins = 0;
+            int playerBWins = 0;
+
+            foreach (var set in setResults)
+            {
+                if(DidPlayerAWinSet(set))
+                {
+                    playerAWins++;
                 }
                 else
                 {
-                    _context.SetResults.Update(setResult);
+                    playerBWins++;
                 }
             }
+            return playerAWins > playerBWins ? match.PlayerAId : match.PlayerBId;
+        }
 
-            await _context.SaveChangesAsync();
+        private bool DidPlayerAWinSet(SetResult set)
+        {
+            if (set.TieBreakA.HasValue && set.TieBreakB.HasValue)
+                return set.TieBreakA > set.TieBreakB;
+
+            return set.PlayerAGames > set.PlayerBGames;
         }
     }
 }

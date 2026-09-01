@@ -51,7 +51,19 @@ else
                                     @foreach (var set in match.Sets.OrderBy(s => s.SetNumber))
                                     {
                                         <span class="score">
-                                            @(set.TieBreakA ?? set.PlayerAGames)
+                                            @if (set.SetNumber == 3)
+                                            {
+                                                @(set.TieBreakA ?? 0)
+                                            }
+                                            else
+                                            {
+                                                @set.PlayerAGames
+
+                                                @if (set.TieBreakA.HasValue)
+                                                {
+                                                    <sup>@set.TieBreakA</sup>
+                                                }
+                                            }
                                         </span>
                                     }
                                 </div>
@@ -70,7 +82,19 @@ else
                                     @foreach (var set in match.Sets.OrderBy(s => s.SetNumber))
                                     {
                                         <span class="score">
-                                            @(set.TieBreakB ?? set.PlayerBGames)
+                                            @if (set.SetNumber == 3)
+                                            {
+                                                @(set.TieBreakB ?? 0)
+                                            }
+                                            else
+                                            {
+                                                @set.PlayerBGames
+
+                                                @if (set.TieBreakB.HasValue)
+                                                {
+                                                    <sup>@set.TieBreakB</sup>
+                                                }
+                                            }
                                         </span>
                                     }
                                 </div>
@@ -125,7 +149,7 @@ else
         {
             var setResults = (List<SetResult>)result.Data;
 
-            await TournamentBracketService.SaveMatchResultsAsync(setResults);
+            await TournamentBracketService.SaveMatchResultsAsync(setResults, match);
         }
     }
 }
